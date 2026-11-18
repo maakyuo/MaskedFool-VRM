@@ -1,0 +1,27 @@
+name: Build Blender 3D preview
+on:
+  push:
+    paths:
+      - 'build_avatar.py'
+      - '.github/workflows/build-model.yml'
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Blender
+        run: sudo apt-get update && sudo apt-get install -y blender
+      - name: Generate model
+        run: |
+          mkdir -p output
+          blender -b -t 2 --python build_avatar.py
+          mv masked_fool_v2.glb masked_fool_v2.blend output/
+      - name: Check generated files
+        run: test -s output/masked_fool_v2.glb && test -s output/masked_fool_v2.blend
+      - uses: actions/upload-artifact@v4
+        with:
+          name: masked-fool-blender-preview
+          path: output/
+          if-no-files-found: error
