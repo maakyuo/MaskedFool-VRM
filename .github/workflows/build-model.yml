@@ -11,15 +11,20 @@ jobs:
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
-      - name: Install Blender
-        run: sudo apt-get update && sudo apt-get install -y blender
+      - name: Install Blender and NumPy
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y blender python3-numpy
+      - name: Verify Blender Python NumPy
+        run: |
+          blender -b --python-expr "import numpy; print('NumPy:', numpy.__version__)"
       - name: Generate model
         run: |
           mkdir -p output
           blender -b -t 2 --python build_avatar.py
+          test -s masked_fool_v2.glb
+          test -s masked_fool_v2.blend
           mv masked_fool_v2.glb masked_fool_v2.blend output/
-      - name: Check generated files
-        run: test -s output/masked_fool_v2.glb && test -s output/masked_fool_v2.blend
       - uses: actions/upload-artifact@v4
         with:
           name: masked-fool-blender-preview
